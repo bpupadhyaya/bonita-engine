@@ -263,4 +263,14 @@ public class ClassLoaderServiceImpl implements ClassLoaderService {
         VirtualClassLoader localClassLoader = getLocalClassLoader(type, id);
         return localClassLoader.removeListener(classLoaderListener);
     }
+
+    @Override
+    public boolean addListener(ClassLoaderListener classLoaderListener){
+        return globalListeners.add(classLoaderListener);
+    }
+
+    @Override
+    public boolean removeListener(ClassLoaderListener classLoaderListener){
+        return globalListeners.remove(classLoaderListener);
+    }
 }
