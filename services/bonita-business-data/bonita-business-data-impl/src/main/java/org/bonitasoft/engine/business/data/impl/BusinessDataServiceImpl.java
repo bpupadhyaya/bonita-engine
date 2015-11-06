@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.persistence.CascadeType;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
@@ -69,8 +68,8 @@ public class BusinessDataServiceImpl implements BusinessDataService {
     private BusinessDataReloader businessDataReloader;
 
     public BusinessDataServiceImpl(final BusinessDataRepository businessDataRepository, final JsonBusinessDataSerializer jsonBusinessDataSerializer,
-            final BusinessDataModelRepository businessDataModelRepository, final TypeConverterUtil typeConverterUtil,
-            BusinessDataReloader businessDataReloader) {
+                                   final BusinessDataModelRepository businessDataModelRepository, final TypeConverterUtil typeConverterUtil,
+                                   BusinessDataReloader businessDataReloader) {
         this.businessDataRepository = businessDataRepository;
         this.jsonBusinessDataSerializer = jsonBusinessDataSerializer;
         this.businessDataModelRepository = businessDataModelRepository;
@@ -259,10 +258,14 @@ public class BusinessDataServiceImpl implements BusinessDataService {
 
     private Serializable buildJsonRepresentation(final Entity entity, final String businessDataURIPattern) throws SBusinessDataRepositoryException {
         try {
-            return jsonBusinessDataSerializer.serializeEntity(entity, businessDataURIPattern);
+            return serializeJson(entity, businessDataURIPattern);
         } catch (final IOException e) {
             throw new SBusinessDataRepositoryException(e);
         }
+    }
+
+    private String serializeJson(Entity entity, String businessDataURIPattern) throws IOException {
+        return jsonBusinessDataSerializer.serializeEntity(entity, businessDataURIPattern);
     }
 
     private Serializable buildJsonRepresentation(final List<Entity> entities, final String businessDataURIPattern) throws SBusinessDataRepositoryException {

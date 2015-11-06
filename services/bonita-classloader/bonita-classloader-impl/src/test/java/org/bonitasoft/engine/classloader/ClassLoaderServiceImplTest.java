@@ -1,10 +1,14 @@
 package org.bonitasoft.engine.classloader;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.util.Collections;
@@ -56,7 +60,7 @@ public class ClassLoaderServiceImplTest {
 
     @Before
     public void before() throws Exception {
-        classLoaderService = spy(new ClassLoaderServiceImpl(parentClassLoaderResolver,logger,eventService));
+        classLoaderService = spy(new ClassLoaderServiceImpl(parentClassLoaderResolver, logger, eventService));
         processClassLoader = classLoaderService.getLocalClassLoader(CHILD_TYPE, CHILD_ID);
         tenantClassLoader = classLoaderService.getLocalClassLoader(PARENT_TYPE, PARENT_ID);
         testClassLoader = Thread.currentThread().getContextClassLoader();
@@ -109,7 +113,7 @@ public class ClassLoaderServiceImplTest {
         //given
         classLoaderService.addListener(CHILD_TYPE, CHILD_ID, myClassLoaderListener);
         //when
-        classLoaderService.refreshLocalClassLoader(CHILD_TYPE, CHILD_ID, Collections.<String, byte[]> emptyMap());
+        classLoaderService.refreshLocalClassLoader(CHILD_TYPE, CHILD_ID, Collections.<String, byte[]>emptyMap());
         //then
         assertThat(myClassLoaderListener.isOnUpdateCalled()).isTrue();
         assertThat(myClassLoaderListener.isOnDestroyCalled()).isFalse();
@@ -154,7 +158,7 @@ public class ClassLoaderServiceImplTest {
     @Test(expected = SClassLoaderException.class)
     public void should_removeLocalClassLoader_throw_exception_if_parent_not_removed() throws Exception {
         //given
-        classLoaderService.getLocalClassLoader(CHILD_TYPE,17);//second classloader
+        classLoaderService.getLocalClassLoader(CHILD_TYPE, 17);//second classloader
         //when
         classLoaderService.removeLocalClassLoader(CHILD_TYPE, CHILD_ID);
         classLoaderService.removeLocalClassLoader(PARENT_TYPE, PARENT_ID);
@@ -166,6 +170,34 @@ public class ClassLoaderServiceImplTest {
         //when
         classLoaderService.removeLocalClassLoader(CHILD_TYPE, CHILD_ID);
         classLoaderService.removeLocalClassLoader(PARENT_TYPE, PARENT_ID);
+    }
+
+    @Test
+    public void should_globalListeners_be_called_on_destroy() throws Exception {
+        //given
+        classLoaderService.getLocalClassLoader(CHILD_TYPE, 17);//second classloader
+        ClassLoaderListener listener = mock(ClassLoaderListener.class);
+        classLoaderService.addListener(listener);
+        //when
+        classLoaderService.removeLocalClassLoader(CHILD_TYPE, CHILD_ID);
+        classLoaderService.removeLocalClassLoader(CHILD_TYPE, 17);
+
+        //then
+        verify(listener, times(2)).onDestroy(any(VirtualClassLoader.class));
+    }
+
+    @Test
+    public void should_globalListeners_be_called_on_update() throws Exception {
+        //given
+        classLoaderService.getLocalClassLoader(CHILD_TYPE, 17);//second classloader
+        ClassLoaderListener listener = mock(ClassLoaderListener.class);
+        classLoaderService.addListener(listener);
+        //when
+        classLoaderService.refreshLocalClassLoader(CHILD_TYPE, CHILD_ID, Collections.<String, byte[]>emptyMap());
+        classLoaderService.refreshLocalClassLoader(CHILD_TYPE, 17, Collections.<String, byte[]>emptyMap());
+
+        //then
+        verify(listener, times(2)).onUpdate(any(VirtualClassLoader.class));
     }
 
 }

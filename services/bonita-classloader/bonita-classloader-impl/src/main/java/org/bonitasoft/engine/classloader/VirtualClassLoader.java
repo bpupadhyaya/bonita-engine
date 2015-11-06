@@ -53,14 +53,14 @@ public class VirtualClassLoader extends ClassLoader {
 
     private Set<VirtualClassLoader> children = new HashSet<>();
 
-    protected VirtualClassLoader(final String artifactType, final long artifactId, final ClassLoader parent) {
+    VirtualClassLoader(final String artifactType, final long artifactId, final ClassLoader parent) {
         super(parent);
         this.artifactType = artifactType;
         this.artifactId = artifactId;
         listeners = new ArrayList<>();
     }
 
-    protected VirtualClassLoader(final String artifactType, final long artifactId, final VirtualClassLoader parent) {
+    VirtualClassLoader(final String artifactType, final long artifactId, final VirtualClassLoader parent) {
         this(artifactType, artifactId, (ClassLoader) parent);
         virtualParent = parent;
     }
